@@ -1,4 +1,4 @@
-# BUGswarm Javascript Library
+# BUGswarm Java Library
 
 Connect your resources to BUGswarm and share their information with this java client library.  It 
 is currently based on using a bidirectional chunked http connection, though will likely be moving
