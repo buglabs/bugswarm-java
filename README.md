@@ -8,6 +8,11 @@ is currently based on using a bidirectional chunked http connection, though will
 
 ```java
 
+	String hostname = 		"api.bugswarm.net";
+	String participation_key = 	"3e98ac6ca152f9bc279d0ef6e6bc9877e1508fd8";
+	String resource_id = 		"0da7ce672f5a2e067ee8a0e050ca3e363283ea39";
+	String[] swarms = new String[]{ "0da7ce672f5a2e067ee8a0e050ca3e363283ea39"	};
+
 	try {
 		//create a session
 		producersession = SwarmClientFactory.createProductionSession(hostname, participation_key, resource_id, swarms);
