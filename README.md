@@ -4,7 +4,31 @@ Connect your resources to BUGswarm and share their information with this java cl
 is currently based on using a bidirectional chunked http connection, though will likely be moving
 [Websockets](http://code.google.com/p/jwebsocket/) soon.
 
+### Dependencies
+
+Note, before using this library, binary dependencies must be resolved.  As of Bug Rootfs 2.1.1, the necessary dependencies have already been deployed to ```/usr/share/java/bundle/```  The dependencies also need to be resolved in eclipse.  One technique would be to embed the additional .jar files into your eclipse project, however this produces large .jar files that can take a while to deploy to the bug.  We suggest resolving the dependencies locally:
+
+1. Clone this repository to a folder outside of your eclipse workspace:  ```git clone git@github.com:buglabs/bugswarm-java.git```
+1. In Eclipse, click on ```Preferences -> Target Platform -> Running Platform -> Edit -> Add```
+1. In the dialog select Directory and then navigate to the swarm-libs folder of this repository.
+1. The Target Content dialog should now show '4 plug-ins available' for swarm-libs.
+1. Finish the dialog and restart eclipse.
+
+Note that com.buglabs.bug.swarm.client is included as a binary dependency.  As a result, you should not import the source into eclipse unless you need to make changes to the swarm library itself.  The copy of com.buglabs.bug.swarm.client included in this repository is the same version already deployed to the R2.1.1 rootfs.  If you have an older rootfs, simply copy the .jar files from the swarm-libs folder over the the directory ```/usr/share/java/bundle``` on the rootfs.
+
 ### API Usage
+
+The following is a snippet demonstrating how to use the bug swarm library.  The following code has also been included in the SimpleSwarmExample bug application in this repository.  To try out the following code on your bug, you can write your own application from scratch or
+
+1. select ```file -> import -> Existing Projects into Workspace -> Select Root Directory -> Browse
+1. Select the SimpleSwarmExample folder from this repository
+1. Click on Finish
+1. Deploy the application to your bug
+1. On your bug serial console, execute ```tail -f /var/log/felix.log``` and notice the verbose bug swarm output
+1. Additionally, save this html file to your workstation PC: ```https://raw.github.com/buglabs/bugswarm-js/master/examples/helloworld.html``` and open the local file in your google chrome web browser
+1. Right click in the empty white space and select ```inspect element```
+1. Click on the Console tab
+1. You should see presence messages from multiple resources, as well as two different messages, ```{"test":"foo"}``` and ```{"message":"Java client hi"}```
 
 ```java
 
