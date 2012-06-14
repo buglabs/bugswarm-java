@@ -1,16 +1,1 @@
 Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: SimpleSwarmExample
-Bundle-Activator: simpleswarmexample.Activator
-Bundle-SymbolicName: SimpleSwarmExample
-Bundle-Version: 1.0.0
-Bundle-Vendor: Andrew Tergis
-Bundle-Description: An OSGI implementation of JConnolly's swarm sample code
-Bug-Bundle-Type: Application
-BUG-API-Version: 2.0.2
-Import-Package: org.osgi.framework,
- org.osgi.service.log,
- org.osgi.util.tracker,
- com.buglabs.application,
- com.buglabs.util
-Require-Bundle: com.buglabs.bug.swarm.client;bundle-version="1.0.0"
