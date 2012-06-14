@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+
+<project name="SimpleSwarmExample" default="build">
+<property name="basedir.path" value="/home/mark/workspace/SimpleSwarmExample" />
+<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+  <classpath>
+    <pathelement location="/usr/share/ant/lib/ant-contrib.jar"/>
+  </classpath>
+</taskdef>
+<echo message="Ant version: ${ant.version}" />
+  <path id="basedir.path">
+        <pathelement path="${basedir}" />
+    </path>
+    <pathconvert property="project.name" refid="basedir.path">
+        <chainedmapper>
+            <mapper type="flatten"/>
+            <flattenmapper/>
+        </chainedmapper>
+    </pathconvert>
+<echo message="here is my project name before the edit: ${project.name}" />
+<propertyregex property="project.name"  input="${project.name}" override="TRUE" regexp=" "  replace="_"  />
+<echo message="here is my project name after edit: ${project.name}" />
+<property name="jarName" value="${project.name}.jar" />
+<property name="bug.address" value="10.253.24.117" />
+<!--input
+    message="Please enter the name of the jar file:"
+    addproperty="jarName"
+    defaultvalue="${project.name}.jar"
+  />   
+<input
+    message="Please enter the Bug's IP address:"
+    addproperty="bug.address"
+    defaultvalue="10.253.24.117"
+  /-->   
+<target name="build">
+    
+<echo>Removing</echo>
+<delete file="${jarName}"/>
+<echo>Compressing</echo>
+ 
+    <jar file="${jarName}" basedir="." manifest="META-INF/MANIFEST.MF"></jar>
+  <echo>Deploying</echo>
+<copy todir="/tmp">
+  <fileset dir=".">
+    <include name="${jarName}" />
+  </fileset>
+</copy>
+<echo message="Killing java on ${bug.address}" />
+<sshexec 
+    host="${bug.address}" 
+    username="root" 
+    password="root" 
+    trust="true" 
+    timeout="10000"
+failonerror="false"
+    command="killall -9 java"
+/>
+<echo message="Removing the cache on ${bug.address}" />
+<sshexec 
+    host="${bug.address}" 
+    username="root" 
+    password="root" 
+    trust="true" 
+    timeout="10000"
+failonerror="false"
+    command="rm -fr /var/volatile/felix-cache"
+/>
+<echo message="Removing ${ant.project.name} from ${bug.address}" />
+<sshexec 
+    host="${bug.address}" 
+    username="root" 
+    password="root" 
+    trust="true" 
+failonerror="false"
+    timeout="10000"
+    command="rm -fr /usr/share/java/apps/${jarName}"
+/>
+<echo message="Copying new ${ant.project.name} to ${bug.address}" />
+<echo message="Copying  /tmp/${jarName} to ${bug.address}" />
+<scp 
+file="/tmp/${jarName}" 
+    todir="root:root@${bug.address}:/usr/share/java/apps" 
+      verbose="true" trust="true">
+  </scp>
+<sshexec 
+    host="${bug.address}" 
+    username="root" 
+    password="root" 
+    trust="true" 
+failonerror="false"
+    timeout="10000"
+    command="/etc/init.d/felix restart"
+/>
+    </target>
+</project>
