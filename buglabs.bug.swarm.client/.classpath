@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="/home/mark/jars/jackson-core-asl-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/mark/jars/jackson-mapper-asl-1.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/mark/jars/mongo-2.7.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/mark/jars/org.touge.restclient.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
