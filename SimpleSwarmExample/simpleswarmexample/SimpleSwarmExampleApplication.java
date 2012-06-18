@@ -40,7 +40,7 @@ public class SimpleSwarmExampleApplication implements ManagedRunnable {
 		
 		try {
 	        //create a session
-	        producersession = SwarmClientFactory.createProductionSession(hostname, participation_key, resource_id, false, false, swarms);
+	        producersession = SwarmClientFactory.createProductionSession(hostname, participation_key, resource_id, true, true, swarms);
 
 	        //add a listener for incoming messages
 	        producersession.addListener(new ISwarmJsonMessageListener() {                   
@@ -72,10 +72,13 @@ public class SimpleSwarmExampleApplication implements ManagedRunnable {
 	        map.put("message", "Java client hi");
 	        try {
 	        	while(true){
-		            producersession.send(map);
+	        		if (producersession != null && producersession.isConnected()){
+	        			producersession.send(map);
+	        		}
 		            Thread.sleep(1000);
 		        }
 	        } catch (InterruptedException e){
+	        	ilog("closing session");
 	        	producersession.close();
 	        	return;
 	        }
