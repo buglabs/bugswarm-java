@@ -79,8 +79,8 @@ public class SwarmParticipationReader extends Thread {
 						listener.exceptionOccurred(ExceptionType.SERVER_MESSAGE_PARSE_ERROR, "Unparsable message: " + line);
 					continue;
 				}
-				
-				debugOut(line, false);
+				//uncomment below to print all messages received by the reader
+				//debugOut(line, false);
 				
 				//Parse the message string into a JsonNode.
 				JsonNode jmessage = mapper.readTree(line);
