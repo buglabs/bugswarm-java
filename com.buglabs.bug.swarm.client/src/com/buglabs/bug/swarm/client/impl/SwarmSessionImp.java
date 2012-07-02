@@ -44,6 +44,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	private boolean keepalive;
 	private boolean autoreconnect;
 	private long timestamp;	
+	private final Timer keepaliveTimer;
 
 	/**
 	 * @param hostname host of server
@@ -69,6 +70,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		this.listeners = new CopyOnWriteArrayList<ISwarmMessageListener>();
 		this.listeners.add(this);
 		this.socket = createSocket(hostname, port);
+		this.keepaliveTimer = new Timer();
 
 		sendHeader();
 		if (keepalive)
@@ -79,14 +81,13 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	//the local timestamp to the global.  if they're the same
 	//no message has been sent, send a \n, otherwise just keep truckin
 	private void createKeepAliveThread() {
-		final Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
+		keepaliveTimer.schedule(new TimerTask() {
 		  private long localtimestamp = timestamp;
 
 		public void run() {
 			  if (localtimestamp==timestamp){
 				  try {
-					writeOut("\n");
+					writeOut("\r\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}  
@@ -101,7 +102,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 
 	private Socket createSocket(String hostname, int port) throws UnknownHostException, IOException {
 		Socket socket = new Socket(hostname, port);
-		socket.setSoTimeout(60000);
+		socket.setSoTimeout(2000);
 		this.soutput = socket.getOutputStream();		
 		
 		if (readerThread != null)
@@ -264,13 +265,10 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	 * @param out
 	 */
 	private void debugOut(String message, boolean out) {
-		System.out.print(apiKey.substring(0, 4));
 		if (out)
-			System.out.print(" --> ");
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+"["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" --> "+message);
 		else
-			System.out.print(" <-- ");
-		
-		System.out.println(message);
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" <-- "+message);
 	}
 	
 	/**
@@ -322,6 +320,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	 */
 	private void writeOut(String message) throws IOException {
 		if (!isConnected() && autoreconnect) {
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+"Connection closed when trying to write, reconnecting to swarm");
 			this.socket = createSocket(hostname, port);
 			sendHeader();
 		}			
@@ -349,6 +348,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 
 	@Override
 	public void close() {		
+		keepaliveTimer.cancel();
 		if (readerThread != null)
 			readerThread.shuttingDown();
 		
@@ -377,6 +377,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 			readerThread.interrupt();
 			readerThread = null;
 		}
+		System.out.println("["+this.getClass().getSimpleName()+"]: "+"Swarm Session closed.");
 	}
 	
 	@Override
@@ -392,6 +393,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 
 	@Override
 	public void exceptionOccurred(ExceptionType type, String message) {
+		System.out.println("["+this.getClass().getSimpleName()+"]: "+"Swarm exception["+type+"]: "+message);
 		if (type == ExceptionType.SERVER_UNEXPECTED_DISCONNECT) {
 			try {
 				this.socket = createSocket(hostname, port);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +65,16 @@ public class SwarmParticipationReader extends Thread {
 		readinput:
 			
 		try {			
-			while ((line = reader.readLine()) != null) {
+			while (!shuttingDown) {
+				try {
+					line = reader.readLine();
+				} catch (SocketTimeoutException e) {
+					continue;
+				}
+				if (line == null){
+					System.out.println("["+this.getClass().getSimpleName()+"]: "+"read a null line, quitting");
+					break;
+				}
 				line = line.trim();
 				//Filter empty lines and line length lines.
 				if (line.length() == 0 || isNumeric(line))
@@ -145,8 +155,10 @@ public class SwarmParticipationReader extends Thread {
 		} catch (IOException e) {
 			disconnectMessage = e.getMessage();
 		} catch (InterruptedException e) {
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+"Interrupted: Quitting");
 			return;
 		} finally {
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+"Quitting");
 			//Relying on first element of listeners being the SwarmSessionImpl.  See line 56.
 			if (!shuttingDown)
 				listeners.get(0).exceptionOccurred(ExceptionType.SERVER_UNEXPECTED_DISCONNECT, disconnectMessage);
@@ -233,13 +245,10 @@ public class SwarmParticipationReader extends Thread {
 	}
 	
 	private void debugOut(String message, boolean out) {
-		System.out.print(apiKey.substring(0, 4));
 		if (out)
-			System.out.print(" --> ");
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" --> "+message);
 		else
-			System.out.print(" <-- ");
-		
-		System.out.println(message);
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" <-- "+message);
 	}
 
 	/**
