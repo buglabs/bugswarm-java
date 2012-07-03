@@ -28,6 +28,7 @@ import com.buglabs.bug.swarm.client.ISwarmSession;
  *
  */
 public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
+	
 	private Socket socket;
 	private final String apiKey;
 	private static final String CRLF = "\r\n";
@@ -96,7 +97,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 
 			  
 		  }
-		}, 0, 60000);
+		}, 0, MAX_INTERVAL);
 	}
 
 
@@ -108,7 +109,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		if (readerThread != null)
 			readerThread.interrupt();
 		
-		this.readerThread = new SwarmParticipationReader(socket.getInputStream(), apiKey, listeners);
+		this.readerThread = new SwarmParticipationReader(socket, apiKey, listeners);
 		this.readerThread.start();
 		//sendHeader();
 		
@@ -321,7 +322,15 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	private void writeOut(String message) throws IOException {
 		if (!isConnected() && autoreconnect) {
 			System.out.println("["+this.getClass().getSimpleName()+"]: "+"Connection closed when trying to write, reconnecting to swarm");
-			this.socket = createSocket(hostname, port);
+			try {
+				this.socket = createSocket(hostname, port);
+			} catch (UnknownHostException e){
+				if (keepalive)
+					System.out.println("["+this.getClass().getSimpleName()+"]: "+"UnknownHostException during reconnect, will retry on next keepalive tick");
+				else
+					System.out.println("["+this.getClass().getSimpleName()+"]: "+"UnknownHostException during reconnect: Network is unavailable, swarm session is stopped.");
+				return;
+			}
 			sendHeader();
 		}			
 		
@@ -398,8 +407,10 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 			try {
 				this.socket = createSocket(hostname, port);
 			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if (keepalive)
+					System.out.println("["+this.getClass().getSimpleName()+"]: "+"UnknownHostException during reconnect, will retry on next keepalive tick");
+				else
+					System.out.println("["+this.getClass().getSimpleName()+"]: "+"UnknownHostException during reconnect: Network is unavailable, swarm session is stopped.");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

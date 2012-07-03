@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +43,8 @@ public class SwarmParticipationReader extends Thread {
 	private final String apiKey;
 	private final List<ISwarmMessageListener> listeners;
 	private final static ObjectMapper mapper = new ObjectMapper();
+	private final Socket socket;
+	private long last_message;
 	
 	/**
 	 * @param is inputstream, must not be null.
@@ -48,9 +52,10 @@ public class SwarmParticipationReader extends Thread {
 	 * @param listeners List of ISwarmMessageListener.  Must not be null.
 	 * @throws UnsupportedEncodingException
 	 */
-	protected SwarmParticipationReader(InputStream is, String apiKey, List<ISwarmMessageListener> listeners) throws UnsupportedEncodingException {
-		AbstractSwarmWSClient.validateParams(is, apiKey, listeners);
-		
+	protected SwarmParticipationReader(Socket sock, String apiKey, List<ISwarmMessageListener> listeners) throws UnsupportedEncodingException, IOException{
+		AbstractSwarmWSClient.validateParams(sock, apiKey, listeners);		
+		InputStream is = sock.getInputStream();
+		this.socket = sock;
 		this.apiKey = apiKey;
 		this.listeners = listeners;
 		this.reader = new BufferedReader(new InputStreamReader(is, ISwarmClient.SWARM_CHARACTER_ENCODING));
@@ -61,6 +66,7 @@ public class SwarmParticipationReader extends Thread {
 		running = true;
 		String line = null;
 		String disconnectMessage = "Server disconnect";
+		last_message = new Date().getTime();
 		
 		readinput:
 			
@@ -69,12 +75,17 @@ public class SwarmParticipationReader extends Thread {
 				try {
 					line = reader.readLine();
 				} catch (SocketTimeoutException e) {
+					if (last_message + SwarmSessionImp.MAX_INTERVAL + 100 < new Date().getTime()){
+						System.out.println("["+this.getClass().getSimpleName()+"]: "+"Connection stale, forcing the socket closed to trigger reconnect");
+						socket.close();
+					}
 					continue;
 				}
 				if (line == null){
 					System.out.println("["+this.getClass().getSimpleName()+"]: "+"read a null line, quitting");
 					break;
 				}
+				last_message = new Date().getTime();
 				line = line.trim();
 				//Filter empty lines and line length lines.
 				if (line.length() == 0 || isNumeric(line))
