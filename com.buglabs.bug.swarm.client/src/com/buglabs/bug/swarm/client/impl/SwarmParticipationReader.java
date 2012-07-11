@@ -44,6 +44,7 @@ public class SwarmParticipationReader extends Thread {
 	private final List<ISwarmMessageListener> listeners;
 	private final static ObjectMapper mapper = new ObjectMapper();
 	private final Socket socket;
+	private final boolean autoreconnect;
 	private long last_message;
 	
 	/**
@@ -52,12 +53,14 @@ public class SwarmParticipationReader extends Thread {
 	 * @param listeners List of ISwarmMessageListener.  Must not be null.
 	 * @throws UnsupportedEncodingException
 	 */
-	protected SwarmParticipationReader(Socket sock, String apiKey, List<ISwarmMessageListener> listeners) throws UnsupportedEncodingException, IOException{
+	protected SwarmParticipationReader(Socket sock, String apiKey, List<ISwarmMessageListener> listeners,
+				boolean autoreconnect) throws UnsupportedEncodingException, IOException{
 		AbstractSwarmWSClient.validateParams(sock, apiKey, listeners);		
 		InputStream is = sock.getInputStream();
 		this.socket = sock;
 		this.apiKey = apiKey;
 		this.listeners = listeners;
+		this.autoreconnect = autoreconnect;
 		this.reader = new BufferedReader(new InputStreamReader(is, ISwarmClient.SWARM_CHARACTER_ENCODING));
 	}
 	
@@ -75,7 +78,7 @@ public class SwarmParticipationReader extends Thread {
 				try {
 					line = reader.readLine();
 				} catch (SocketTimeoutException e) {
-					if (last_message + SwarmSessionImp.MAX_INTERVAL + 100 < new Date().getTime()){
+					if (autoreconnect && (last_message + SwarmSessionImp.MAX_INTERVAL + 100 < new Date().getTime())){
 						System.out.println("["+this.getClass().getSimpleName()+"]: "+"Connection stale, forcing the socket closed to trigger reconnect");
 						socket.close();
 					}

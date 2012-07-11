@@ -109,7 +109,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		if (readerThread != null)
 			readerThread.interrupt();
 		
-		this.readerThread = new SwarmParticipationReader(socket, apiKey, listeners);
+		this.readerThread = new SwarmParticipationReader(socket, apiKey, listeners, autoreconnect);
 		this.readerThread.start();
 		//sendHeader();
 		
