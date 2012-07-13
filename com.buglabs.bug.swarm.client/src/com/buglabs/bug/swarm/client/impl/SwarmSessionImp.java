@@ -332,7 +332,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 				return;
 			}
 			sendHeader();
-		}			
+		}
 		
 		//debugOut(message, true);
 		//new framing requires sending a \r\n after each message.
