@@ -88,7 +88,8 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		public void run() {
 			  if (localtimestamp==timestamp){
 				  try {
-					writeOut("\r\n");
+					//writeOut("\r\n");
+					  writeOut(generateOutgoingPresenceMessage(true,swarmIds));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}  
@@ -267,7 +268,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	 */
 	private void debugOut(String message, boolean out) {
 		if (out)
-			System.out.println("["+this.getClass().getSimpleName()+"]: "+"["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" --> "+message);
+			System.out.println("["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" --> "+message);
 		else
 			System.out.println("["+this.getClass().getSimpleName()+"]: "+apiKey.substring(0, 4)+" <-- "+message);
 	}
@@ -334,7 +335,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 			sendHeader();
 		}
 		
-		//debugOut(message, true);
+		debugOut(message, true);
 		//new framing requires sending a \r\n after each message.
 		soutput.write(Integer.toHexString(message.length()+CRLF.length()).getBytes());
 		soutput.write(CRLF.getBytes());

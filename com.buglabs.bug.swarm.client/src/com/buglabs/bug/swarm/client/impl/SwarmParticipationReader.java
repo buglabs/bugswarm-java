@@ -104,7 +104,7 @@ public class SwarmParticipationReader extends Thread {
 					continue;
 				}
 				//uncomment below to print all messages received by the reader
-				//debugOut(line, false);
+				debugOut(line, false); 
 				
 				//Parse the message string into a JsonNode.
 				JsonNode jmessage = mapper.readTree(line);

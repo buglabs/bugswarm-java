@@ -73,7 +73,7 @@ public class SimpleSwarmExampleApplication implements ManagedRunnable {
 	        try {
 	        	while(true){
 	        		if (producersession != null && producersession.isConnected()){
-	        			//producersession.send(map);
+	        			producersession.send(map);
 	        		}
 		            Thread.sleep(1000);
 		        }
