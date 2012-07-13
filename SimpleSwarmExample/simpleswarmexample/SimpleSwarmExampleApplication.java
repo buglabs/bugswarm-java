@@ -41,6 +41,7 @@ public class SimpleSwarmExampleApplication implements ManagedRunnable {
 		try {
 	        //create a session
 	        producersession = SwarmClientFactory.createProductionSession(hostname, participation_key, resource_id, true, true, swarms);
+	        producersession.enableMessageDebug(true);
 
 	        //add a listener for incoming messages
 	        producersession.addListener(new ISwarmJsonMessageListener() {                   
@@ -70,6 +71,7 @@ public class SimpleSwarmExampleApplication implements ManagedRunnable {
 	        //send some messages
 	        HashMap<String, String> map = new HashMap<String, String>();
 	        map.put("message", "Java client hi");
+
 	        try {
 	        	while(true){
 	        		if (producersession != null && producersession.isConnected()){

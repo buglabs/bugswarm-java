@@ -101,4 +101,11 @@ public interface ISwarmSession {
 	 * Close the session.
 	 */
 	void close();
+	
+	/**
+	 * Enable raw printing of swarm messages to system.out.println
+	 * 
+	 * @param value will enable additional debug printing.
+	 */
+	public void enableMessageDebug(boolean value);
 }

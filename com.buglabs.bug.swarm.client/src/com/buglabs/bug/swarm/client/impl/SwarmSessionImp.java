@@ -44,6 +44,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	private final SessionType type;
 	private boolean keepalive;
 	private boolean autoreconnect;
+	private boolean debugPrinting = false;
 	private long timestamp;	
 	private final Timer keepaliveTimer;
 
@@ -59,7 +60,8 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 	 * @throws UnknownHostException on host resolution error
 	 * @throws IOException on I/O error
 	 */
-	public SwarmSessionImp(String hostname, ISwarmSession.SessionType type, int port, String apiKey, String resourceId, boolean keepalive, boolean autoreconnect, String ... swarmIds) throws UnknownHostException, IOException {		
+	public SwarmSessionImp(String hostname, ISwarmSession.SessionType type, int port, String apiKey, String resourceId, 
+			boolean keepalive, boolean autoreconnect, String ... swarmIds) throws UnknownHostException, IOException {		
 		this.hostname = hostname;
 		this.type = type;
 		this.port = port;
@@ -255,7 +257,9 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		buffer.append(Integer.toHexString(ps.getBytes().length)).append(CRLF);
 		buffer.append(ps).append(CRLF);
 		//uncomment to get join messages
-		//debugOut(buffer.toString(), true);
+		if (debugPrinting) {
+			debugOut(buffer.toString(), true);
+		}
 		soutput.write(buffer.toString().getBytes());
 		soutput.flush();
 	}
@@ -335,7 +339,9 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 			sendHeader();
 		}
 		
-		debugOut(message, true);
+		if (debugPrinting){
+			debugOut(message, true);
+		}
 		//new framing requires sending a \r\n after each message.
 		soutput.write(Integer.toHexString(message.length()+CRLF.length()).getBytes());
 		soutput.write(CRLF.getBytes());
@@ -362,8 +368,8 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		if (readerThread != null)
 			readerThread.shuttingDown();
 		
-		//Attempt to send presence message.
 		try {
+			//Attempt to send presence message.
 			StringBuilder buffer = new StringBuilder(); // StringBuilder(staticHeader.toString());
 			String ps = generateOutgoingPresenceMessage(false, swarmIds);
 			
@@ -372,6 +378,9 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 			//uncomment to get close messages
 			//debugOut(buffer.toString(), true);
 			soutput.write(buffer.toString().getBytes());
+			soutput.flush();
+			//Now also send a blank chunk, to actually close the socket...
+			soutput.write(CRLF.getBytes());
 			soutput.flush();
 		} catch (IOException e) {			
 		}
@@ -407,6 +416,7 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		if (type == ExceptionType.SERVER_UNEXPECTED_DISCONNECT) {
 			try {
 				this.socket = createSocket(hostname, port);
+				sendHeader();
 			} catch (UnknownHostException e) {
 				if (keepalive)
 					System.out.println("["+this.getClass().getSimpleName()+"]: "+"UnknownHostException during reconnect, will retry on next keepalive tick");
@@ -441,5 +451,11 @@ public class SwarmSessionImp implements ISwarmSession, ISwarmMessageListener {
 		writeOut(
 				mapper.writeValueAsString(
 						createFeedRequestMap(feedName, 0, true)));		
+	}
+
+	@Override
+	public void enableMessageDebug(boolean value) {
+		debugPrinting = value;
+		readerThread.enableMessageDebug(value);
 	}
 }

@@ -40,6 +40,7 @@ public class SwarmParticipationReader extends Thread {
 	private final BufferedReader reader;
 	private volatile boolean running = false;
 	private volatile boolean shuttingDown = false;
+	private boolean debugPrinting = false;
 	private final String apiKey;
 	private final List<ISwarmMessageListener> listeners;
 	private final static ObjectMapper mapper = new ObjectMapper();
@@ -62,6 +63,10 @@ public class SwarmParticipationReader extends Thread {
 		this.listeners = listeners;
 		this.autoreconnect = autoreconnect;
 		this.reader = new BufferedReader(new InputStreamReader(is, ISwarmClient.SWARM_CHARACTER_ENCODING));
+	}
+	
+	public void enableMessageDebug(boolean value){
+		debugPrinting = value;
 	}
 	
 	@Override
@@ -104,7 +109,9 @@ public class SwarmParticipationReader extends Thread {
 					continue;
 				}
 				//uncomment below to print all messages received by the reader
-				debugOut(line, false); 
+				if (debugPrinting) {
+					debugOut(line, false);
+				}
 				
 				//Parse the message string into a JsonNode.
 				JsonNode jmessage = mapper.readTree(line);

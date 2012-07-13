@@ -52,6 +52,8 @@ public class SwarmClientFactory {
 	 * @param hostname of swarm server
 	 * @param apiKey of user
 	 * @param resourceId associated with session
+	 * @param keepalive will enable a keepalive thread that will ping the server for you
+	 * @param autoreconnect to automatically re-open the socket if the connection fails
 	 * @param swarmIds swarms to connect with
 	 * @return a swarm session
 	 * @throws UnknownHostException if unable to resolve hostname
